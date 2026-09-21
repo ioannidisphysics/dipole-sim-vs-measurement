@@ -1,19 +1,30 @@
 """
-Analysis for the lambda/2 dipole project.
+Analysis for the half-wave dipole project.
 
 Reads, for each setup A-D:
-  data/<S>_hfss.csv   HFSS export   (header carries the unit: "Freq [MHz]" or "[GHz]")
-  data/<S>_nec.csv    NEC2 export   (written by sim_dipole_nec.py)
-  data/<S>_meas_[1-3].s1p           repeat measurements, Touchstone
-  data/<S>_meas_<tag>.s1p           cable experiments: hand, ferrite, parallel
+  data/<S>_hfss.csv          HFSS export      (unit taken from the header)
+  data/<S>_nec.csv           NEC2 export      (written by sim_dipole_nec.py)
+  data/<S>_meas_[0-9].s1p    measurement repeats, Touchstone
+  data/<S>_meas_<tag>.s1p    variations: indoor, ferrite, hand, parallel
 
-Writes plots/<S>_s11.png per setup and prints a markdown results table.
-Runs fine before any measurement exists: the measurement columns stay empty.
+Writes plots/<S>_s11.png, plots/all_setups.png, data/results_summary.csv and
+prints the markdown tables that go into the README.
 
     pip install numpy matplotlib scikit-rf
     python analyze_dipole.py
+
+Two metrics are reported for every trace, because they disagree when the trace
+is not clean:
+
+  f_min     frequency of the deepest point, parabolically interpolated
+  f_centre  centre of the contiguous band where VSWR < 2
+
+f_min is the sharper number but it jumps between dips when two are nearly
+equal. f_centre is blunt but stable. Where the two agree the trace is a single
+clean resonance; where they do not, something else is in the measurement.
 """
 import glob
+import os
 import re
 
 import matplotlib.pyplot as plt
@@ -21,21 +32,32 @@ import numpy as np
 
 try:
     import skrf as rf
-except ImportError:                                   # measurements not needed to plot the sims
+except ImportError:                       # the simulations plot fine without it
     rf = None
 
+C = 299792458.0
 UNITS = {"Hz": 1, "kHz": 1e3, "MHz": 1e6, "GHz": 1e9}
 SETUPS = ["A", "B", "C", "D"]
-VSWR2_DB = -9.54                                      # |S11| for VSWR = 2
+VSWR2_DB = -9.54                          # |S11| for VSWR = 2, i.e. |gamma| = 1/3
 
 
 def load_touchstone(path):
-    n = rf.Network(path)
-    return n.f, 20 * np.log10(np.abs(n.s[:, 0, 0]))
+    if rf is not None:
+        n = rf.Network(path)
+        return n.f, n.s[:, 0, 0]
+    f, g = [], []                         # minimal reader, real/imag Touchstone
+    for line in open(path):
+        line = line.strip()
+        if not line or line[0] in "!#":
+            continue
+        a = line.split()
+        f.append(float(a[0]))
+        g.append(float(a[1]) + 1j * float(a[2]))
+    return np.array(f), np.array(g)
 
 
 def load_csv(path):
-    """HFSS/NEC csv. The frequency unit is read from the header, not assumed."""
+    """HFSS/NEC2 csv. The frequency unit is read from the header, not assumed."""
     header = open(path).readline()
     scale = UNITS[re.search(r"\[(\w+)\]", header).group(1)]
     d = np.loadtxt(path, delimiter=",", skiprows=1)
@@ -47,21 +69,41 @@ def f_min(f, s_db):
     i = int(np.argmin(s_db))
     if 0 < i < len(f) - 1:
         y0, y1, y2 = s_db[i - 1:i + 2]
-        denom = y0 - 2 * y1 + y2
-        if denom != 0:
-            return f[i] + 0.5 * (y0 - y2) / denom * (f[i + 1] - f[i]), s_db[i]
+        den = y0 - 2 * y1 + y2
+        if den != 0:
+            return f[i] + 0.5 * (y0 - y2) / den * (f[i + 1] - f[i]), y1
     return f[i], s_db[i]
 
 
-def bandwidth(f, s_db, thr=VSWR2_DB):
-    """Contiguous band around the minimum where |S11| < thr. None if never matched."""
-    below = np.where(s_db < thr)[0]
-    if below.size == 0:
+def match_band(f, s_db, thr=VSWR2_DB):
+    """
+    Widest contiguous run below thr, with linearly interpolated edges.
+
+    Returns (lo, hi, truncated). truncated is True when the run touches an end
+    of the sweep, which means the real band is wider than what is reported.
+    """
+    below = s_db < thr
+    if not below.any():
         return None
-    lo_i, hi_i = below[0], below[-1]
-    lo = np.interp(thr, s_db[:lo_i + 1][::-1], f[:lo_i + 1][::-1])
-    hi = np.interp(thr, s_db[hi_i:], f[hi_i:])
-    return lo, hi
+
+    runs, start = [], None
+    for i, v in enumerate(below):
+        if v and start is None:
+            start = i
+        elif not v and start is not None:
+            runs.append((start, i - 1))
+            start = None
+    if start is not None:
+        runs.append((start, len(below) - 1))
+
+    a, b = max(runs, key=lambda r: f[r[1]] - f[r[0]])
+
+    def cross(i, j):
+        return f[i] + (thr - s_db[i]) * (f[j] - f[i]) / (s_db[j] - s_db[i])
+
+    lo = f[a] if a == 0 else cross(a - 1, a)
+    hi = f[b] if b == len(f) - 1 else cross(b, b + 1)
+    return lo, hi, (a == 0 or b == len(f) - 1)
 
 
 def r_from_depth(s_db_min):
@@ -70,77 +112,158 @@ def r_from_depth(s_db_min):
     return 50 * (1 + g) / (1 - g)
 
 
-rows, notes = [], []
-for s in SETUPS:
+def line_length(f, gamma):
+    """
+    Electrical length of transmission line left in the reference plane.
+
+    A lossless line does not change |S11|, only its phase, at a rate set by the
+    round trip. Taking the median step keeps the estimate away from the
+    resonance, where the antenna's own reactance dominates the rotation.
+    """
+    step = np.angle(gamma[1:] / gamma[:-1])
+    return float(-np.median(step) / (2 * np.pi) * C / np.median(np.diff(f)) / 2)
+
+
+def describe(f, s_db, gamma=None):
+    fm, depth = f_min(f, s_db)
+    band = match_band(f, s_db)
+    d = dict(f_min=fm, depth=depth, f_centre=np.nan, bw=np.nan, q=np.nan,
+             truncated=False, cable=np.nan)
+    if band:
+        lo, hi, trunc = band
+        d.update(f_centre=0.5 * (lo + hi), bw=hi - lo,
+                 q=0.707 / ((hi - lo) / (0.5 * (lo + hi))), truncated=trunc)
+    if gamma is not None:
+        d["cable"] = line_length(f, gamma)
+    return d
+
+
+# --------------------------------------------------------------- per setup --
+os.makedirs("plots", exist_ok=True)
+rows, variations = [], []
+fig_all, axes_all = plt.subplots(2, 2, figsize=(11, 7))
+
+for s, ax_all in zip(SETUPS, axes_all.flat):
     hfss = glob.glob(f"data/{s}_hfss.csv")
     nec = glob.glob(f"data/{s}_nec.csv")
-    if not hfss:
-        continue
-    fh, sh = load_csv(hfss[0])
-    f_sim, _ = f_min(fh, sh)
 
-    fig, ax = plt.subplots(figsize=(7, 4))
-    ax.plot(fh / 1e6, sh, "C0", lw=2, label="HFSS (FEM)")
-    f_nec = None
+    fig, ax = plt.subplots(figsize=(7, 4.2))
+    row = dict(setup=s)
+
+    for target in (ax, ax_all):
+        if hfss:
+            fh, sh = load_csv(hfss[0])
+            target.plot(fh / 1e6, sh, "C7", lw=1.4, label="HFSS, nominal geometry")
+        if nec:
+            fn, sn = load_csv(nec[0])
+            target.plot(fn / 1e6, sn, "C0--", lw=1.6, label="NEC2, as built")
+
+    if hfss:
+        row["hfss"] = describe(*load_csv(hfss[0]))
     if nec:
-        fn, sn = load_csv(nec[0])
-        f_nec, _ = f_min(fn, sn)
-        ax.plot(fn / 1e6, sn, "C3--", lw=1.6, label="NEC2 (MoM)")
+        row["nec"] = describe(*load_csv(nec[0]))
 
-    # repeat measurements
-    meas = sorted(glob.glob(f"data/{s}_meas_[0-9].s1p"))
-    f_meas = None
-    if meas and rf is not None:
-        fres, depth = [], []
-        for k, p in enumerate(meas, 1):
-            fm, sm = load_touchstone(p)
-            fr, dp = f_min(fm, sm)
-            fres.append(fr)
-            depth.append(dp)
-            ax.plot(fm / 1e6, sm, lw=1, alpha=0.85, label=f"measurement {k}")
-        fres = np.array(fres)
-        f_meas = (fres.mean(), fres.std(ddof=1) if len(fres) > 1 else 0.0, float(np.mean(depth)))
+    repeats = sorted(glob.glob(f"data/{s}_meas_[0-9].s1p"))
+    stats = []
+    for k, path in enumerate(repeats, 1):
+        fm_, g = load_touchstone(path)
+        sm_ = 20 * np.log10(np.abs(g))
+        stats.append(describe(fm_, sm_, g))
+        for target in (ax, ax_all):
+            target.plot(fm_ / 1e6, sm_, "C3", lw=1.8,
+                        label="measured" if k == 1 else None)
+    if stats:
+        row["meas"] = stats
 
-    # cable experiments
-    if rf is not None:
-        for p in sorted(glob.glob(f"data/{s}_meas_[a-z]*.s1p")):
-            fm, sm = load_touchstone(p)
-            tag = p.split("_meas_")[1].removesuffix(".s1p")
-            fr, _ = f_min(fm, sm)
-            notes.append(f"{s}, {tag}: f = {fr/1e6:.1f} MHz")
-            ax.plot(fm / 1e6, sm, ":", lw=1.2, label=tag)
+    labelled = set()
+    for path in sorted(glob.glob(f"data/{s}_meas_[a-z]*.s1p")):
+        fm_, g = load_touchstone(path)
+        sm_ = 20 * np.log10(np.abs(g))
+        tag = path.split("_meas_")[1].removesuffix(".s1p")
+        group = tag.rstrip("0123456789")            # indoor1..indoor5 share a label
+        variations.append((s, tag, describe(fm_, sm_, g)))
+        ax.plot(fm_ / 1e6, sm_, "C8", lw=0.9, alpha=0.55,
+                label=None if group in labelled else group)
+        labelled.add(group)
 
-    ax.axhline(VSWR2_DB, color="grey", ls=":", lw=1)
-    ax.set_xlabel("Frequency (MHz)")
-    ax.set_ylabel("|S11| (dB)")
-    ax.set_title(f"Dipole, setup {s}")
-    ax.grid(alpha=0.3)
-    ax.legend(fontsize=8)
+    for target in (ax, ax_all):
+        target.axhline(VSWR2_DB, color="grey", ls=":", lw=1)
+        target.set_xlabel("Frequency (MHz)")
+        target.set_ylabel("|S11| (dB)")
+        target.grid(alpha=0.3)
+        target.set_title(f"Setup {s}")
+        target.legend(fontsize=7)
+
     fig.tight_layout()
     fig.savefig(f"plots/{s}_s11.png", dpi=200)
     plt.close(fig)
+    rows.append(row)
 
-    bw = bandwidth(fh, sh)
-    rows.append((s, f_sim, sh.min(), r_from_depth(sh.min()), f_nec, f_meas, bw))
+fig_all.tight_layout()
+fig_all.savefig("plots/all_setups.png", dpi=200)
+plt.close(fig_all)
 
-print("| Setup | f HFSS (MHz) | f NEC2 (MHz) | f measured (MHz) | |S11| min (dB) | "
-      "R from depth (ohm) | BW VSWR<2 (MHz) | HFSS vs NEC (%) | HFSS vs meas (%) |")
-print("| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
-for s, f_sim, s_min, r_in, f_nec, f_meas, bw in rows:
-    nec_c = f"{f_nec/1e6:.2f}" if f_nec else "-"
-    d_nec = f"{100*(f_sim-f_nec)/f_nec:+.2f}" if f_nec else "-"
-    if f_meas:
-        mean, sd, dp = f_meas
-        meas_c = f"{mean/1e6:.2f} ± {sd/1e6:.2f}"
-        d_meas = f"{100*(f_sim-mean)/mean:+.2f}"
-        depth_c = f"{dp:.2f}"
+# ------------------------------------------------------------------ tables --
+print("| Setup | HFSS nominal (MHz) | NEC2 as built (MHz) | measured f_min (MHz) | "
+      "measured f_centre (MHz) | depth (dB) | BW VSWR<2 (MHz) | FBW (%) | Q | "
+      "meas vs NEC2 (%) |")
+print("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+for r in rows:
+    h = r.get("hfss")
+    n = r.get("nec")
+    ms = r.get("meas")
+    if ms:
+        m = ms[0] if len(ms) == 1 else None
+        fmin_c = (f"{m['f_min']/1e6:.2f}" if m else
+                  f"{np.mean([x['f_min'] for x in ms])/1e6:.2f} ± "
+                  f"{np.std([x['f_min'] for x in ms], ddof=1)/1e6:.2f}")
+        cen = np.mean([x["f_centre"] for x in ms])
+        cen_c = f"{cen/1e6:.2f}" + ("*" if any(x["truncated"] for x in ms) else "")
+        dep = f"{np.mean([x['depth'] for x in ms]):.2f}"
+        bw = f"{np.mean([x['bw'] for x in ms])/1e6:.1f}"
+        fbw = f"{100*np.mean([x['bw'] for x in ms])/cen:.1f}"
+        q = f"{np.mean([x['q'] for x in ms]):.1f}"
+        dev = f"{100*(np.mean([x['f_min'] for x in ms]) - n['f_min'])/n['f_min']:+.2f}" if n else "-"
     else:
-        meas_c, d_meas, depth_c = "-", "-", f"{s_min:.2f}"
-    bw_c = f"{(bw[1]-bw[0])/1e6:.1f}" if bw else "-"
-    print(f"| {s} | {f_sim/1e6:.2f} | {nec_c} | {meas_c} | {depth_c} | {r_in:.1f} | "
-          f"{bw_c} | {d_nec} | {d_meas} |")
+        fmin_c = cen_c = dep = bw = fbw = q = dev = "-"
+    print(f"| {r['setup']} | {h['f_min']/1e6:.2f} | {n['f_min']/1e6:.2f} | {fmin_c} | "
+          f"{cen_c} | {dep} | {bw} | {fbw} | {q} | {dev} |")
 
-if notes:
-    print("\nCable experiment:")
-    for n in notes:
-        print(" ", n)
+print("\nSimulated bandwidth for comparison:")
+for r in rows:
+    n = r.get("nec")
+    if n and np.isfinite(n["bw"]):
+        print(f"  {r['setup']}: NEC2 BW {n['bw']/1e6:.1f} MHz "
+              f"({100*n['bw']/n['f_centre']:.1f}%), Q {n['q']:.1f}, depth {n['depth']:.2f} dB")
+
+print("\nTransmission line left in the reference plane, from the phase slope:")
+for r in rows:
+    for k, m in enumerate(r.get("meas", []), 1):
+        print(f"  {r['setup']} run {k}: {m['cable']:.2f} m one way")
+
+if variations:
+    print("\nVariations:")
+    for s, tag, d in variations:
+        print(f"  {s} / {tag}: f_min {d['f_min']/1e6:.2f} MHz, "
+              f"f_centre {d['f_centre']/1e6:.2f} MHz, depth {d['depth']:.2f} dB")
+
+# --------------------------------------------------------------- csv summary --
+with open("data/results_summary.csv", "w") as fh:
+    fh.write("setup,f_hfss_MHz,f_nec_MHz,f_meas_min_MHz,f_meas_centre_MHz,"
+             "depth_meas_dB,bw_meas_MHz,fbw_meas_pct,q_meas,"
+             "bw_nec_MHz,fbw_nec_pct,meas_vs_nec_pct,cable_m\n")
+    for r in rows:
+        h, n, ms = r.get("hfss"), r.get("nec"), r.get("meas")
+        if not ms:
+            continue
+        fm = np.mean([x["f_min"] for x in ms])
+        cen = np.mean([x["f_centre"] for x in ms])
+        fh.write(f"{r['setup']},{h['f_min']/1e6:.3f},{n['f_min']/1e6:.3f},{fm/1e6:.3f},"
+                 f"{cen/1e6:.3f},{np.mean([x['depth'] for x in ms]):.2f},"
+                 f"{np.mean([x['bw'] for x in ms])/1e6:.2f},"
+                 f"{100*np.mean([x['bw'] for x in ms])/cen:.2f},"
+                 f"{np.mean([x['q'] for x in ms]):.2f},"
+                 f"{n['bw']/1e6:.2f},{100*n['bw']/n['f_centre']:.2f},"
+                 f"{100*(fm-n['f_min'])/n['f_min']:+.2f},"
+                 f"{np.mean([x['cable'] for x in ms]):.2f}\n")
+print("\nwrote data/results_summary.csv")
