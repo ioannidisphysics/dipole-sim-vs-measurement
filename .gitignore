@@ -1,3 +1,7 @@
 *.aedtresults/
 *.lock
 *.auto
+
+# Raw plot exports dropped next to the project by HFSS; the canonical copies are in data/
+hfss/S Parameter*.csv
+*.temp

@@ -153,7 +153,7 @@ for s, ax_all in zip(SETUPS, axes_all.flat):
     for target in (ax, ax_all):
         if hfss:
             fh, sh = load_csv(hfss[0])
-            target.plot(fh / 1e6, sh, "C7", lw=1.4, label="HFSS, nominal geometry")
+            target.plot(fh / 1e6, sh, "C7", lw=1.6, label="HFSS, as built")
         if nec:
             fn, sn = load_csv(nec[0])
             target.plot(fn / 1e6, sn, "C0--", lw=1.6, label="NEC2, as built")
@@ -204,10 +204,10 @@ fig_all.savefig("plots/all_setups.png", dpi=200)
 plt.close(fig_all)
 
 # ------------------------------------------------------------------ tables --
-print("| Setup | HFSS nominal (MHz) | NEC2 as built (MHz) | measured f_min (MHz) | "
+print("| Setup | HFSS as built (MHz) | NEC2 as built (MHz) | measured f_min (MHz) | "
       "measured f_centre (MHz) | depth (dB) | BW VSWR<2 (MHz) | FBW (%) | Q | "
-      "meas vs NEC2 (%) |")
-print("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
+      "HFSS vs meas (%) | NEC2 vs meas (%) |")
+print("| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |")
 for r in rows:
     h = r.get("hfss")
     n = r.get("nec")
@@ -223,18 +223,23 @@ for r in rows:
         bw = f"{np.mean([x['bw'] for x in ms])/1e6:.1f}"
         fbw = f"{100*np.mean([x['bw'] for x in ms])/cen:.1f}"
         q = f"{np.mean([x['q'] for x in ms]):.1f}"
-        dev = f"{100*(np.mean([x['f_min'] for x in ms]) - n['f_min'])/n['f_min']:+.2f}" if n else "-"
+        fm_mean = np.mean([x["f_min"] for x in ms])
+        # deviation of each simulation from the measurement, which is the reference
+        dev_h = f"{100*(h['f_min'] - fm_mean)/fm_mean:+.2f}" if h else "-"
+        dev_n = f"{100*(n['f_min'] - fm_mean)/fm_mean:+.2f}" if n else "-"
     else:
-        fmin_c = cen_c = dep = bw = fbw = q = dev = "-"
+        fmin_c = cen_c = dep = bw = fbw = q = dev_h = dev_n = "-"
     print(f"| {r['setup']} | {h['f_min']/1e6:.2f} | {n['f_min']/1e6:.2f} | {fmin_c} | "
-          f"{cen_c} | {dep} | {bw} | {fbw} | {q} | {dev} |")
+          f"{cen_c} | {dep} | {bw} | {fbw} | {q} | {dev_h} | {dev_n} |")
 
-print("\nSimulated bandwidth for comparison:")
+print("\nSimulated bandwidth and depth, for comparison:")
 for r in rows:
-    n = r.get("nec")
-    if n and np.isfinite(n["bw"]):
-        print(f"  {r['setup']}: NEC2 BW {n['bw']/1e6:.1f} MHz "
-              f"({100*n['bw']/n['f_centre']:.1f}%), Q {n['q']:.1f}, depth {n['depth']:.2f} dB")
+    for tag in ("hfss", "nec"):
+        d = r.get(tag)
+        if d and np.isfinite(d["bw"]):
+            print(f"  {r['setup']} {tag.upper():4}: BW {d['bw']/1e6:6.1f} MHz "
+                  f"({100*d['bw']/d['f_centre']:4.1f}%), Q {d['q']:4.1f}, "
+                  f"depth {d['depth']:6.2f} dB")
 
 print("\nTransmission line left in the reference plane, from the phase slope:")
 for r in rows:
@@ -251,7 +256,8 @@ if variations:
 with open("data/results_summary.csv", "w") as fh:
     fh.write("setup,f_hfss_MHz,f_nec_MHz,f_meas_min_MHz,f_meas_centre_MHz,"
              "depth_meas_dB,bw_meas_MHz,fbw_meas_pct,q_meas,"
-             "bw_nec_MHz,fbw_nec_pct,meas_vs_nec_pct,cable_m\n")
+             "bw_hfss_MHz,bw_nec_MHz,fbw_nec_pct,"
+             "hfss_vs_meas_pct,nec_vs_meas_pct,cable_m\n")
     for r in rows:
         h, n, ms = r.get("hfss"), r.get("nec"), r.get("meas")
         if not ms:
@@ -263,7 +269,7 @@ with open("data/results_summary.csv", "w") as fh:
                  f"{np.mean([x['bw'] for x in ms])/1e6:.2f},"
                  f"{100*np.mean([x['bw'] for x in ms])/cen:.2f},"
                  f"{np.mean([x['q'] for x in ms]):.2f},"
-                 f"{n['bw']/1e6:.2f},{100*n['bw']/n['f_centre']:.2f},"
-                 f"{100*(fm-n['f_min'])/n['f_min']:+.2f},"
+                 f"{h['bw']/1e6:.2f},{n['bw']/1e6:.2f},{100*n['bw']/n['f_centre']:.2f},"
+                 f"{100*(h['f_min']-fm)/fm:+.2f},{100*(n['f_min']-fm)/fm:+.2f},"
                  f"{np.mean([x['cable'] for x in ms]):.2f}\n")
 print("\nwrote data/results_summary.csv")

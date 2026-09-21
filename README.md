@@ -9,6 +9,13 @@ numbers, why they differ, and to say where the remaining disagreement is not yet
 **Status:** complete. Simulation, cross-verification and measurement are all in the repository.
 Four setups measured on 21 September 2026 on a roof in Thessaloniki, one calibration per setup.
 
+**The main result.** The two solvers disagree by up to 4.4% on where these dipoles resonate, and
+the measurement says which one is right and why. The difference is the feed gap: 21.83 mm, which
+is 2% of the longest setup and 14% of the shortest. NEC2 cannot represent it — a method of
+moments code drives one segment of a continuous wire — and its error tracks the gap fraction
+exactly, reaching +4.8% on the shortest dipole. HFSS models the gap as a gap, and on that same
+dipole it lands within 0.8% of the measurement.
+
 ![All four setups](plots/all_setups.png)
 
 ## 1. Theory
@@ -45,7 +52,9 @@ ln(segment/radius) — the radius that matters is the one whose logarithm is the
 **The feed gap is 21.83 mm**, measured metal to metal across the block. That is 2% of setup A
 and 14% of setup D. NEC2 drives one segment of a continuous wire, so the gap cannot be modelled
 as a gap; what can be done is to run the model twice, once with the gap counted as conductor
-(span = 2L + g) and once not (span = 2L), and treat the pair as a bracket on the answer.
+(span = 2L + g) and once not (span = 2L), and treat the pair as a bracket on the answer. HFSS
+has no such restriction — it bridges the real gap with the port sheet — and the difference
+between the two treatments turns out to be the main result of the project (§8).
 
 As built, on the roof:
 
@@ -71,11 +80,14 @@ covered it, so the change was kept rather than undone.
 - Adaptive mesh to Maximum Delta S = 0.01, up to 25 passes
 - Interpolating frequency sweep, 0.1 MHz step
 
-The HFSS model was built and solved before the kit was measured with a caliper, so it carries
-the **nominal** geometry: uniform arms of 2.0 or 2.5 mm radius and a 2 mm feed gap. It is kept
-in this repository as the cross-verification of NEC2 (§5) and is plotted for reference, but it
-is not the simulation that the measurement is compared against. Re-solving it at the as-built
-geometry is the first item under "not finished" in §8.
+All four setups were solved twice. The first pass used the **nominal** geometry — uniform arms
+of 2.0 or 2.5 mm radius and a 2 mm feed gap — because it was run before the kit was measured
+with a caliper. Those exports are kept as `data/<S>_hfss_nominal.csv` and are what §5 is about.
+
+The second pass uses the **as-built** geometry of §2, and it is the one compared against
+measurement. It matters because HFSS models the 21.83 mm feed gap as a real gap bridged by the
+port sheet, which is the one thing NEC2 structurally cannot do. §8 is mostly about what that
+changed.
 
 ## 4. Method 2 — NEC2 (method of moments)
 
@@ -126,7 +138,8 @@ Re-solving both setups with Maximum Delta S = 0.01 moved A by +1.32 MHz (+0.96%)
 
 The same ratio test applied to the measurement, where nothing is assumed about the model at all:
 the measured f_B / f_A is **1.636** against the pure-scaling limit of 1.667, so the measurement
-satisfies the test with room to spare. The C/D pair gives 1.421 against a limit of 1.500.
+satisfies the test with room to spare. The C/D pair gives 1.421 against a limit of 1.500. The
+as-built runs pass it too, at 1.650 for HFSS and 1.649 for NEC2.
 
 The corresponding check on the NEC2 side is segmentation. Sweeping the segment count from 15 to
 61 moves the resonance by less than 0.1% for setup C and 0.25% for setup D, so the NEC2 numbers
@@ -166,49 +179,71 @@ would have looked like a measurement.
 
 ## 7. Results
 
-| Setup | HFSS, nominal (MHz) | NEC2, as built (MHz) | Measured (MHz) | Measured vs NEC2 | Depth (dB) | BW VSWR<2, measured | BW VSWR<2, NEC2 | Q |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A | 139.05 | 140.70 | **143.22** | +1.79% | −14.95 | 12.6 MHz (8.7%) | 11.8 MHz (8.4%) | 8.1 |
-| B | 231.63 | 232.06 | **234.25** | +0.95% | −16.27 | 33.4 MHz (14.2%) | 22.1 MHz (9.5%) | 5.0 |
-| C | 556.34 | 571.97 | **567.10** | −0.85% | −19.89 | 158.9 MHz (26.1%) | 63.0 MHz (11.0%) | 2.7 |
-| D | 930.50 | 844.11 | **805.60** | −4.56% | −18.76 | 212.9 MHz (26.3%) | 108.2 MHz (12.7%) | 2.7 |
+The measurement is the reference; both simulations are quoted as their error against it.
+
+| Setup | Measured (MHz) | HFSS, as built (MHz) | error | NEC2, as built (MHz) | error |
+| --- | --- | --- | --- | --- | --- |
+| A | **143.22** | 139.01 | −2.94% | 140.70 | −1.76% |
+| B | **234.25** | 229.39 | −2.08% | 232.06 | −0.94% |
+| C | **567.10** | 547.76 | −3.41% | 571.97 | +0.86% |
+| D | **805.60** | 812.06 | **+0.80%** | 844.11 | +4.78% |
+
+Bandwidth and depth:
+
+| Setup | Depth, measured (dB) | BW VSWR<2, measured | BW, HFSS | BW, NEC2 | Q, measured |
+| --- | --- | --- | --- | --- | --- |
+| A | −14.95 | 12.6 MHz (8.7%) | 11.9 MHz (8.5%) | 11.8 MHz (8.4%) | 8.1 |
+| B | −16.27 | 33.4 MHz (14.2%) | 22.0 MHz (9.5%) | 22.1 MHz (9.5%) | 5.0 |
+| C | −19.89 | 158.9 MHz (26.1%) | 63.4 MHz (11.5%) | 63.0 MHz (11.0%) | 2.7 |
+| D | −18.76 | 212.9 MHz (26.3%) | 98.5 MHz (12.1%) | 108.2 MHz (12.7%) | 2.7 |
 
 Machine-readable summary in [`data/results_summary.csv`](data/results_summary.csv). Per-setup
 plots: [A](plots/A_s11.png) · [B](plots/B_s11.png) · [C](plots/C_s11.png) · [D](plots/D_s11.png).
 
 ## 8. Discussion
 
-**Three setups agree with the model to better than 2%.** A, B and C land at +1.79%, +0.95% and
-−0.85% of the NEC2 prediction for the as-built geometry, with no parameter fitted to the
+**All four setups are within 5% of both simulations**, with no parameter fitted to the
 measurement. The shortening from the ideal λ/2 length runs from −4.5% measured for A to −14%
 for D, against the 3–5% that textbooks quote for thin wire.
 
-**The disagreement is monotonic in thickness, and that is the interesting result.**
+**The feed gap is what NEC2 was getting wrong.** NEC2's error grows monotonically as the gap
+takes up more of the antenna, reaching +4.78% for setup D, where 21.83 mm of gap is 13.6% of a
+160 mm dipole. NEC2 drives one segment of a continuous wire with an ideal delta-gap source, so
+that gap is not in the model at all. HFSS bridges it with a real port sheet, and on the same
+geometry it lands 32 MHz lower — within 0.8% of the measurement:
 
-| Setup | ℓ / 2r | Measured − NEC2 |
-| --- | --- | --- |
-| A | 175 | +1.79% |
-| B | 100 | +0.95% |
-| C | 56 | −0.85% |
-| D | 34 | −4.56% |
+| Setup | Gap as a fraction of ℓ | NEC2 − HFSS | NEC2 error | HFSS error |
+| --- | --- | --- | --- | --- |
+| A | 2.2% | +1.2% | −1.76% | −2.94% |
+| B | 3.6% | +1.2% | −0.94% | −2.08% |
+| C | 9.1% | +4.4% | +0.86% | −3.41% |
+| D | 13.6% | +3.9% | +4.78% | **+0.80%** |
 
-The deviation falls smoothly as the elements get fatter, and it changes sign. A fixed error —
-a few millimetres of unmodelled metal at the feed, say — would not do that: fitting one to the
-four setups needs −17.6, −5.5, +4.9 and +7.6 mm respectively, which is not one number. What
-does vary in exactly this way is the validity of the two approximations that NEC2 is making
-here: the thin-wire kernel, which is asymptotic in ℓ/2r, and the delta-gap source standing in
-for a feed gap that is 2% of setup A and 14% of setup D. Both get worse in the same direction
-as the element gets fatter, and this measurement cannot separate them.
+Setup A is the control that makes this readable. Between the nominal and as-built HFSS runs its
+feed gap went from 2 mm to 21.83 mm while its overall span stayed at 1000 mm, and the resonance
+moved by **0.04 MHz**. The gap model is worth nothing when the gap is 2% of the antenna and
+worth 4% when it is 14%, which is what a feed-model effect should look like.
 
-The HFSS runs, at nominal geometry, disagree with NEC2 in the same direction for the same
-setups — −2.11% for C and −2.36% for D, against −1.19% and −0.23% for A and B — so the finite
-element solver, which models the gap as a real gap and the arm as a real cylinder, also says
-NEC2 puts thick dipoles too high. The measurement sides with HFSS, and for D goes further than
-HFSS does.
+**HFSS is not simply the better solver, though.** For A, B and C it sits 2–3% *below* the
+measurement while NEC2 sits within ±1.8%. Over the four setups the two have almost the same
+RMS error, 2.5% against 2.6%; what differs is the shape. NEC2's error is structured, growing
+with the gap fraction, and is understood. HFSS's is a roughly constant offset in one direction
+that is **not explained here**. Candidates, none of them established:
 
-**What would settle it:** re-solve all four in HFSS at the as-built geometry, with the 21.83 mm
-gap modelled explicitly. If the HFSS curve follows the measurement down for D, the feed model
-is the cause; if it does not, the thin-wire kernel is. That run is not in this repository.
+- *Mesh convergence.* Tightening Maximum Delta S from 0.02 to 0.01 moved setup A up by 0.96%
+  (§5), and the residual after a convergence step usually has the same sign as the step. Another
+  halving, to 0.005, would show whether a further ~1% is waiting there. This is the cheap test
+  and it has not been run.
+- *The equivalent-radius model.* Both solvers were given one uniform radius standing in for a
+  tapered arm (§2). Overstating it pushes both low, and the bracket in §4 is worth 1–2%. Setup
+  D, whose arm is mostly base tube and so depends least on that model, is the one that agrees —
+  but B and C do not order themselves by taper fraction, so this is suggestive at best.
+- *Both models are lossless PEC*, with no contact resistance at the telescopic joints.
+
+**The two solvers agree with each other on bandwidth to better than 1%** for A, B and C, and to
+9% for D, which is worth noting given they disagree by up to 4.4% on centre frequency. Bandwidth
+is set by the arm thickness, which both model the same way; centre frequency is where the feed
+model enters.
 
 **The bandwidth agrees where the trace is clean and not where it is not.** For A the measured
 VSWR<2 bandwidth is 12.6 MHz against 11.8 predicted, a 7% excess that is the right size for
@@ -237,7 +272,8 @@ setup and no repeats.
 
 **What is missing.** One measurement per setup, so there is no repeatability figure for the
 roof session; the five indoor repeats of setup A are all that exist, and they measure the room
-rather than the antenna. No ferrite or cable-routing experiment. No HFSS at as-built geometry.
+rather than the antenna. No ferrite or cable-routing experiment. No HFSS run at Delta S = 0.005,
+which is the one test that would bite on the unexplained offset above.
 
 ## 9. Measuring the same antennas with an SDR
 
@@ -255,7 +291,11 @@ dipole-sim-vs-measurement/
   README.md
   sim_dipole_nec.py      NEC2 model of the as-built geometry, writes data/<S>_nec.csv
   analyze_dipole.py      reads HFSS/NEC2/Touchstone, writes the plots and the tables
-  data/                  <S>_hfss.csv, <S>_nec.csv, <S>_meas_*.s1p, results_summary.csv
+  data/                  <S>_hfss.csv          HFSS, as-built geometry
+                         <S>_hfss_nominal.csv  HFSS, nominal geometry (the §5 convergence story)
+                         <S>_nec.csv           NEC2, as built
+                         <S>_meas_*.s1p        measurements
+                         results_summary.csv
   hfss/                  dipole.aedt
   plots/                 per-setup comparisons, all_setups.png, radiation_pattern.png
 ```
