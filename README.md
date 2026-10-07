@@ -89,6 +89,14 @@ measurement. It matters because HFSS models the 21.83 mm feed gap as a real gap 
 port sheet, which is the one thing NEC2 structurally cannot do. §8 is mostly about what that
 changed.
 
+**Known defect in the committed C and D exports.** The arm radius in `hfss/dipole.aedt` is the
+variable `r_arm`. For setups A and B it holds the as-built equivalent radius, 2.85 and 2.99 mm.
+For setups C and D it still holds the nominal values, 2.5 and 2.0 mm, while the as-built figures
+2.13 and 2.38 mm sit in a second variable, `r_pad`, that no geometry in the project references.
+`data/C_hfss.csv` and `data/D_hfss.csv` were therefore solved at the nominal arm radius and are
+labelled as-built when they are not. They are left in place with this notice until the two
+designs are re-solved; §7 states the correction NEC2 predicts for them.
+
 ## 4. Method 2 — NEC2 (method of moments)
 
 The four as-built dipoles were solved with NEC2 via [PyNEC](https://pypi.org/project/PyNEC/)
@@ -147,21 +155,43 @@ are not limited by discretisation either.
 
 ## 6. Measurement
 
-NanoVNA-F V2, 50 kHz – 3 GHz. OSL calibration at the end of the cable, repeated for every
-setup, 101 points per sweep. The antenna was on a roof, horizontal, at least 1 m clear of
-railings and walls, with the feed cable led away perpendicular to the arms for as far as it
+NanoVNA-F V2, 50 kHz – 3 GHz. OSL calibration at the end of the VNA's own test cable, repeated
+for every setup, 101 points per sweep. The antenna was on a roof, horizontal, at least 1 m clear
+of railings and walls, with the feed cable led away perpendicular to the arms for as far as it
 would go.
 
-**How much cable is still in the reference plane.** A lossless line does not change |S11|, only
-its phase, so the phase of Γ rotates at a rate set by the round trip. Taking the median phase
-step across the sweep — away from resonance, where the antenna's own reactance dominates the
-rotation — gives the line length left in front of the calibration plane:
+The calibration plane is therefore the connector the antenna screws onto — but **the antenna is
+not at its own connector**. The kit's base carries 0.60 m of RG174 with a ferrite choke moulded
+onto it, and that cable sits between the connector and the dipole. It is inside every
+measurement here by construction, and short of cutting it off there is no way to calibrate it
+out. The following is how much of it the data can see.
 
-| Setup | A | B | C | D |
+**How much line is in front of the reference plane, and what it is made of.** A lossless line
+does not change |S11|, only its phase, so Γ rotates at a rate set by the round trip, and the
+median phase step across the sweep converts that rate into a length. The estimator reports
+free-space equivalent length — physical length divided by velocity factor — and it cannot tell
+the cable's rotation from the antenna's own. A cable contributes a constant phase slope, so the
+two add exactly, and running the identical estimator on the NEC2 model, which has no cable at
+all, separates them:
+
+| | A | B | C | D |
 | --- | --- | --- | --- | --- |
-| One-way line length (m) | 1.31 | 1.17 | 1.23 | 1.22 |
+| Measured, from the phase slope (m) | 1.31 | 1.17 | 1.23 | 1.22 |
+| NEC2, antenna alone, no cable (m) | 0.25 | 0.15 | 0.05 | 0.02 |
+| Difference, attributable to cable (m) | **1.05** | **1.02** | **1.18** | **1.20** |
+| 0.60 m of RG174 at VF 0.66 would give | 0.91 | 0.91 | 0.91 | 0.91 |
 
-The four agree to ±6%, which is what makes them one consistent measurement rather than four.
+Most of the 1.2 m is the kit's own pigtail, and the four estimates of it agree to ±8%, which is
+what makes this one consistent measurement rather than four. A fifth of what setup A appeared to
+show was never cable: it is the antenna's own phase rotation, which is largest where the sweep
+is narrowest and falls to almost nothing by setup D.
+
+The 0.11 to 0.29 m left over is not accounted for. Either the pigtail is longer than the 0.60 m
+quoted for the kit, or its velocity factor is nearer 0.55 than the 0.66 nominal for RG174, which
+varies between makes, or part of it is the connector and the transition into the plastic block.
+The test that settles it takes five minutes and has not been run: sweep the pigtail on its own
+with an open at the far end and read the delay directly.
+
 The residual line does not move the resonance, because it does not change |Γ|, but its loss
 deepens every dip and its outer braid carries common-mode current (§7).
 
@@ -197,6 +227,15 @@ Bandwidth and depth:
 | C | −19.89 | 158.9 MHz (26.1%) | 63.4 MHz (11.5%) | 63.0 MHz (11.0%) | 2.7 |
 | D | −18.76 | 212.9 MHz (26.3%) | 98.5 MHz (12.1%) | 108.2 MHz (12.7%) | 2.7 |
 
+**Setups C and D are pending a re-solve.** Their HFSS runs used the nominal arm radius rather
+than the as-built one (§3). NEC2, which does model the radius, puts the cost of that at −0.46%
+for C, where 2.5 mm stood in for 2.13, and +0.60% for D, where 2.0 mm stood in for 2.38.
+Carrying those across, HFSS as built should land near **550.3 MHz for C**, an error of −2.96%,
+and **807.2 MHz for D**, an error of +0.20%. Those are predictions from a different solver, not
+results: the tables above are left uncorrected and will be replaced by what the re-solve
+actually returns. If the prediction holds, NEC2 − HFSS becomes +1.2, +1.2, +3.9, +4.6% against
+gap fractions of 2.2, 3.6, 9.1, 13.6% — monotonic, which it is not in the table below.
+
 Machine-readable summary in [`data/results_summary.csv`](data/results_summary.csv). Per-setup
 plots: [A](plots/A_s11.png) · [B](plots/B_s11.png) · [C](plots/C_s11.png) · [D](plots/D_s11.png).
 
@@ -219,10 +258,31 @@ geometry it lands 32 MHz lower — within 0.8% of the measurement:
 | C | 9.1% | +4.4% | +0.86% | −3.41% |
 | D | 13.6% | +3.9% | +4.78% | **+0.80%** |
 
-Setup A is the control that makes this readable. Between the nominal and as-built HFSS runs its
-feed gap went from 2 mm to 21.83 mm while its overall span stayed at 1000 mm, and the resonance
-moved by **0.04 MHz**. The gap model is worth nothing when the gap is 2% of the antenna and
-worth 4% when it is 14%, which is what a feed-model effect should look like.
+**Setup A was meant to be the control, and it is not a clean one.** Between the nominal and
+as-built HFSS runs its feed gap went from 2 mm to 21.83 mm while its overall span stayed at
+1000 mm, and the resonance moved by 0.04 MHz. But the arm radius changed in the same step, from
+the nominal 2.0 mm to the as-built 2.85 mm, and that is not negligible: NEC2 puts it at
+−0.78 MHz on its own. If HFSS answers a radius change the way NEC2 does, the two effects very
+nearly cancelled, and the feed gap at constant span is worth about **+0.8 MHz**, or 0.6%, for
+setup A — not the nothing that the raw difference suggests. The conclusion survives, because
+0.6% at a 2.2% gap fraction against roughly 4% at 13.6% is still the same trend, but the number
+that was quoted for the control was wrong.
+
+The clean version costs one HFSS run: setup A at the as-built 2.85 mm radius with the gap put
+back to 2 mm and the span held at 1000 mm, so that the gap is the only thing that differs. It
+has not been run.
+
+**And the gap fraction is not the only thing that grows down that table.** ℓ/2r falls from 175 to
+34 across the four setups, so the dipoles become electrically fatter in step with the gap taking
+up more of them — and NEC2's kernel is a *thin*-wire approximation. An error that tracks arm
+thickness would produce exactly the same ordering. These four measurements do not separate the
+two explanations.
+
+What separates them is a run that moves one and not the other: setup D at its as-built radius,
+with the gap cut from 21.83 mm to 2 mm and the arms lengthened to hold the span at 160 mm.
+Thickness is untouched, only the feed gap moves. If HFSS then climbs towards NEC2's 844 MHz, the
+gap is the cause; if it stays near 812, it is not, and the thin-wire kernel becomes the better
+suspect. One solve, not yet run.
 
 **HFSS is not simply the better solver, though.** For A, B and C it sits 2–3% *below* the
 measurement while NEC2 sits within ±1.8%. Over the four setups the two have almost the same
@@ -239,6 +299,16 @@ that is **not explained here**. Candidates, none of them established:
   D, whose arm is mostly base tube and so depends least on that model, is the one that agrees —
   but B and C do not order themselves by taper fraction, so this is suggestive at best.
 - *Both models are lossless PEC*, with no contact resistance at the telescopic joints.
+- *Neither model has a ground.* Both solve in free space; the antennas were a short distance
+  above a concrete roof. A horizontal dipole over a conducting plane shifts in resonance by up
+  to 2–3%, upwards or downwards depending on its height in wavelengths, and by less over
+  concrete than over metal; it moves the input resistance as well. This one is different in kind
+  from the others, because it acts on the *measurement* rather than on either model, so it
+  cannot explain a difference between HFSS and NEC2 — but it is the most likely single
+  explanation for A and B coming out above **both** of them. The height above the roof deck was
+  not recorded, so it cannot be checked against the data that exists. Recording it, and if
+  possible repeating one setup at two heights, is the cheapest thing to add to the next
+  session.
 
 **The two solvers agree with each other on bandwidth to better than 1%** for A, B and C, and to
 9% for D, which is worth noting given they disagree by up to 4.4% on centre frequency. Bandwidth
@@ -270,19 +340,35 @@ that would confirm it — a clamp-on ferrite at the feed, and the cable re-route
 arm — was planned and not done; the roof session was a single pass with one calibration per
 setup and no repeats.
 
-**What is missing.** One measurement per setup, so there is no repeatability figure for the
-roof session; the five indoor repeats of setup A are all that exist, and they measure the room
-rather than the antenna. No ferrite or cable-routing experiment. No HFSS run at Delta S = 0.005,
-which is the one test that would bite on the unexplained offset above.
+**What is missing**, in the order that would most change the conclusions:
+
+1. *Re-solve C and D at the as-built arm radius* (§3). Their published HFSS numbers were
+   obtained at the nominal radius, and the correction is predicted but not measured.
+2. *Setup D with the gap cut to 2 mm at constant span*, which is the only run that separates
+   the feed gap from the arm thickness as the cause of NEC2's error.
+3. *Setup A at the as-built radius with a 2 mm gap*, which turns the control of §8 into a clean
+   one-variable comparison.
+4. *HFSS at Delta S = 0.005 on setup A*, the cheap test for the unexplained 2–3% offset.
+5. *The height above the roof deck*, which was never recorded and is needed before ground
+   proximity can be ruled in or out.
+6. *Repeats.* One measurement per setup, so there is no repeatability figure for the roof
+   session; the five indoor repeats of setup A are all that exist, and they measure the room
+   rather than the antenna.
+7. *The ferrite and cable-routing experiment*, planned and not done.
+8. *The delay of the kit's own pigtail*, measured directly, which closes §6.
 
 ## 9. Measuring the same antennas with an SDR
 
 The same four antennas were swept with an RTL-SDR Blog V4 in
 [sdr-spectrum-analyzer](https://github.com/ioannidisphysics/sdr-spectrum-analyzer), comparing
 the receiver's noise floor with the antenna connected against a 50 Ω load, which should peak
-where the antenna is matched. **It did not work**, and the reason is written up there: the
-antenna raised the floor by less than 1 dB, so the receiver's own noise figure, not the antenna,
-set what was measured. The VNA numbers in this repository are the ones that stand.
+where the antenna is matched. **It did not work**, and the reasons are written up there. The
+first is the one that matters: the method needs the antenna to be looking at something hotter
+than the 50 Ω resistor it is being compared against, and at the UHF end of these sweeps it is
+looking at ground and buildings at about the same 290 K, so there is nothing to measure at any
+receiver gain. The method belongs at VHF and below. The second is that the two VHF sweeps, where
+there would have been something to see, were taken at too low a tuner gain. The VNA numbers in
+this repository are the ones that stand.
 
 ## 10. Repository
 
@@ -291,6 +377,11 @@ dipole-sim-vs-measurement/
   README.md
   sim_dipole_nec.py      NEC2 model of the as-built geometry, writes data/<S>_nec.csv
   analyze_dipole.py      reads HFSS/NEC2/Touchstone, writes the plots and the tables
+  check_model_sensitivity.py
+                         the two sensitivity numbers quoted in §6 and §8: what the
+                         assumed arm radius is worth, and how much of the line in
+                         front of the reference plane is cable and how much is the
+                         antenna's own phase rotation
   data/                  <S>_hfss.csv          HFSS, as-built geometry
                          <S>_hfss_nominal.csv  HFSS, nominal geometry (the §5 convergence story)
                          <S>_nec.csv           NEC2, as built
@@ -307,8 +398,9 @@ Measurement files are Touchstone `.s1p`, real/imaginary, 50 Ω reference:
 
 ```bash
 pip install numpy scipy matplotlib scikit-rf PyNEC
-python sim_dipole_nec.py     # re-runs NEC2 for all four setups and prints the geometry table
-python analyze_dipole.py     # rebuilds the plots and prints the results tables
+python sim_dipole_nec.py          # re-runs NEC2 for all four setups, prints the geometry table
+python analyze_dipole.py          # rebuilds the plots and prints the results tables
+python check_model_sensitivity.py # the radius and feed-line numbers quoted in §6 and §8
 ```
 
 `analyze_dipole.py` reads the frequency unit from the csv header, so HFSS exports in MHz or GHz
