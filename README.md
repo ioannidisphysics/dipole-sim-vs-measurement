@@ -15,8 +15,9 @@ shows that the growth *is* the gap. Cutting the gap on the shortest dipole from 
 with span and arm radius held fixed, moves HFSS up by 3.11% and closes **75%** of the
 disagreement. What is left, +1.03%, is the same residual the two solvers show on the longest and
 thinnest setups, where the gap was never significant. So the solvers differ by about 1% for
-reasons of formulation, and everything above that is a feed gap that a method of moments code
-structurally cannot represent, because it drives one segment of a continuous wire.
+reasons of formulation, and everything above that is a feed gap that a thin-wire code like NEC2
+structurally cannot represent, because it drives one segment of a continuous wire. Method of
+moments is not the limitation; the thin-wire kernel and its delta-gap source are.
 
 ![All four setups](plots/all_setups.png)
 
@@ -299,19 +300,13 @@ same way:
 | C | 9.1% | 56 | +2.83% | +0.86% | −1.92% |
 | D | 13.6% | 34 | **+4.17%** | +4.78% | +0.59% |
 
-**Setup A was meant to be the control, and it is not a clean one.** Between the nominal and
-as-built HFSS runs its feed gap went from 2 mm to 21.83 mm while its overall span stayed at
-1000 mm, and the resonance moved by 0.04 MHz. But the arm radius changed in the same step, from
-the nominal 2.0 mm to the as-built 2.85 mm, and that is not negligible: NEC2 puts it at
-−0.78 MHz on its own. If HFSS answers a radius change the way NEC2 does, the two effects very
-nearly cancelled, and the feed gap at constant span is worth about **+0.8 MHz**, or 0.6%, for
-setup A — not the nothing that the raw difference suggests. The conclusion survives, because
-0.6% at a 2.2% gap fraction against roughly 4% at 13.6% is still the same trend, but the number
-that was quoted for the control was wrong.
-
-The clean version costs one HFSS run: setup A at the as-built 2.85 mm radius with the gap put
-back to 2 mm and the span held at 1000 mm, so that the gap is the only thing that differs. It
-has not been run.
+**Setup A's old "control" is not usable.** Between the nominal and as-built HFSS runs its feed
+gap went from 2 mm to 21.83 mm while the span stayed at 1000 mm, and the resonance moved by
+0.04 MHz. But the arm radius changed in the same step, from 2.0 to 2.85 mm, so two things moved
+at once and a small net result says nothing about either. Separating them would need HFSS's own
+sensitivity to the radius, which §4 records as not measured. Item 1 of *What is missing* settles
+the question directly instead, with one variable: setup A at the as-built 2.85 mm radius, the gap
+put back to 2 mm, the span held at 1000 mm.
 
 **The gap fraction is not the only thing that grows down that table.** ℓ/2r falls from 175 to 34
 across the four setups, so the dipoles become electrically fatter in step with the gap taking up
@@ -366,13 +361,13 @@ them established:
   2–3%, upwards or downwards depending on its height in wavelengths, and by less over concrete
   than over metal. This is different in kind from the others, because it acts on the
   *measurement* rather than on either model, so it cannot explain a difference between the two
-  solvers — but it is the best available explanation for the residual, and **it predicts the
-  trend that is actually there**. At roughly a metre above the deck, setup A sits about half a
-  wavelength up and setup D nearly three, so ground coupling should fall away from A to D by
-  about the ratio the residual does. The height was never recorded, so this cannot be checked
-  against the data that exists. Recording it, and repeating one setup at two heights, is the
-  cheapest thing to add to the next session and would probably close the last open question in
-  the project.
+  solvers. Nor does it explain the trend in the residual: the shift from the image alternates in
+  sign with height in wavelengths instead of decaying with it, and at one physical height the
+  four setups sit at four very different electrical heights, so a simple image model at a metre
+  over a perfect conductor puts their shifts on both sides of zero rather than in a line. It
+  remains a possible cause of part of the residual and no more than that, and it cannot be tested
+  at all, because the height above the deck was never recorded. Recording it, and repeating one
+  setup at two heights, is the cheapest thing to add to the next session.
 
 **The two solvers still agree with each other on bandwidth** — to 0.7% for A, 0.7% for B, 1.7%
 for C and 5.5% for D — which is worth noting given that they disagree by up to 4.2% on centre
@@ -396,14 +391,16 @@ setups above 200 MHz are all on that side. The consequence is that **the
 input resistance cannot be recovered from these measurements**: de-embedding needs the cable's
 loss and length to be known, and 10 cm of assumed length moves setup D's resonance by 20 MHz.
 
-**There is no balun.** The kit feeds a balanced antenna from unbalanced coax, so current flows
-on the outside of the braid and the cable becomes part of the radiating structure. That is the
-most likely source of both the missing reflection off resonance and the ripples in the C and D
-traces, whose spacing (roughly 150 MHz for D) corresponds to a line of the order of a metre —
-the length the phase slope measures in front of the calibration plane. The experiment
-that would confirm it — a clamp-on ferrite at the feed, and the cable re-routed parallel to one
-arm — was planned and not done; the roof session was a single pass with one calibration per
-setup and no repeats.
+**The only balun is the kit's own choke, and it is not doing enough.** The base feeds a balanced
+antenna from unbalanced coax through the 0.60 m of RG174 with a ferrite choke moulded onto it
+(§6). That choke is a current balun of a sort, but one small ferrite works over a limited band
+and these sweeps run to 1.3 GHz. Current still flows on the outside of the braid, the cable
+becomes part of the radiating structure, and that is the most likely source of both the missing
+reflection off resonance and the ripples in the C and D traces, whose spacing (roughly 150 MHz
+for D) corresponds to a line of the order of a metre — the length the phase slope measures in
+front of the calibration plane. The experiment that would test it — a second, clamp-on ferrite at
+the feed and the cable re-routed parallel to one arm — was planned and not done; the roof session
+was a single pass with one calibration per setup and no repeats.
 
 **What is missing**, in the order that would most change the conclusions:
 
@@ -418,7 +415,7 @@ setup and no repeats.
 5. *Repeats.* One measurement per setup, so there is no repeatability figure for the roof
    session; the five indoor repeats of setup A are all that exist, and they measure the room
    rather than the antenna.
-6. *The ferrite and cable-routing experiment*, planned and not done.
+6. *A second ferrite and the cable-routing experiment*, planned and not done.
 7. *The delay of the kit's own pigtail*, measured directly, which closes §6.
 
 ## 9. Measuring the same antennas with an SDR
