@@ -10,12 +10,14 @@ numbers, why they differ, and to say where the remaining disagreement is not yet
 Four setups measured on 21 September 2026 on a roof in Thessaloniki, one calibration per setup.
 
 **The main result.** The two solvers disagree by up to 6.7% on where these dipoles resonate, and
-the disagreement is structured. NEC2's error against the measurement runs from −1.8% on the
+the disagreement is structured: NEC2's error against the measurement runs from −1.8% on the
 longest setup to +4.8% on the shortest, tracking the feed gap as it grows from 2% to 14% of the
-antenna: a method of moments code drives one segment of a continuous wire, so the gap is not in
-the model at all. HFSS, which bridges the gap with a port sheet, is wrong by −2.4% ± 0.6% on all
-four setups regardless of the gap. One solver has an error that grows with something it cannot
-model; the other has a constant offset that is not yet explained.
+antenna, while HFSS is wrong by −2.4% ± 0.6% on all four regardless. A controlled run settles how
+much of that is really the gap. Cutting the gap on the shortest dipole from 21.83 mm to 2 mm,
+with span and arm radius held fixed, closes **31%** of the disagreement between the two solvers.
+The feed gap — which a method of moments code structurally cannot represent, because it drives
+one segment of a continuous wire — is therefore a third of the answer, and the thin-wire
+approximation at ℓ/2r = 34 is most of the rest.
 
 ![All four setups](plots/all_setups.png)
 
@@ -251,7 +253,7 @@ plots: [A](plots/A_s11.png) · [B](plots/B_s11.png) · [C](plots/C_s11.png) · [
 measurement. The shortening from the ideal λ/2 length runs from −4.5% measured for A to −14%
 for D, against the 3–5% that textbooks quote for thin wire.
 
-**The feed gap is what NEC2 was getting wrong.** NEC2's error against the measurement grows
+**The feed gap is part of what NEC2 was getting wrong.** NEC2's error against the measurement grows
 monotonically as the gap takes up more of the antenna, from −1.76% on setup A to +4.78% on setup
 D, where 21.83 mm of gap is 13.6% of a 160 mm dipole. NEC2 drives one segment of a continuous
 wire with an ideal delta-gap source, so that gap is not in the model at all. HFSS bridges it
@@ -290,11 +292,27 @@ they disagree by a factor of four. The thin-wire kernel is visibly losing its gr
 the setup where NEC2's error is largest — and that setup is the one carrying most of the weight
 of the feed-gap argument. These four measurements do not separate the two explanations.
 
-What separates them is a run that moves one and not the other: setup D at its as-built radius,
-with the gap cut from 21.83 mm to 2 mm and the arms lengthened to hold the span at 160 mm.
-Thickness is untouched, only the feed gap moves. If HFSS then climbs towards NEC2's 844 MHz, the
-gap is the cause; if it stays near 812, it is not, and the thin-wire kernel becomes the better
-suspect. One solve, not yet run.
+What separates them is a run that moves one and not the other, and it has been made. Setup D was
+re-solved at its as-built radius of 2.38 mm with the feed gap cut from 21.83 mm to 2 mm and the
+arms lengthened to 79 mm, so the span stays at 160.0 mm. Thickness untouched, span untouched,
+only the gap moves. The export is `data/D_hfss_gap2.csv`.
+
+**It landed at 808.02 MHz**, up 16.57 MHz from the 791.45 MHz of the real-gap run. That is
++2.09%, and it closes **31% of the 52.66 MHz** that separated HFSS from NEC2 on this setup. So
+the gap is real, and at the setup where it should matter most it is worth about a third. The
+other two thirds — 4.47% still standing between the two solvers with the gap all but gone — are
+not the gap. They belong to the rest of the formulation: the thin-wire kernel at ℓ/2r = 34, and
+NEC2's ideal delta-gap source against HFSS's lumped port sheet. The radius result above points
+the same way, independently and from a different direction.
+
+The monotonic column in the table is therefore real, but it is not all gap. Gap fraction and
+ℓ/2r rise together across these four antennas, and this experiment splits the credit between
+them roughly one to two.
+
+One trap worth naming out loud: 808.02 MHz happens to sit 0.30% from the measured 805.60 MHz,
+closer than any other simulated number in this repository. It means nothing. That run is a
+different antenna — a 2 mm feed gap, not the 21.83 mm one that was built and measured — and
+quoting it as agreement would be reading a coincidence as a result.
 
 **HFSS is not simply the better solver, though.** It sits below the measurement on all four
 setups — by −2.94, −2.08, −2.83 and −1.76% — a mean of −2.40% with a spread of ±0.6%. Over the
@@ -362,19 +380,17 @@ setup and no repeats.
 
 **What is missing**, in the order that would most change the conclusions:
 
-1. *Setup D with the gap cut to 2 mm at constant span*, which is the only run that separates
-   the feed gap from the arm thickness as the cause of NEC2's error. After the re-solve this is
-   the single most valuable hour left in the project.
-2. *Setup A at the as-built radius with a 2 mm gap*, which turns the control of §8 into a clean
-   one-variable comparison.
-3. *HFSS at Delta S = 0.005 on setup A*, the cheap test for the unexplained −2.4% offset.
-4. *The height above the roof deck*, which was never recorded and is needed before ground
+1. *Setup A at the as-built radius with a 2 mm gap*, which turns the control of §8 into a clean
+   one-variable comparison, and would say whether the gap is worth a third at the long end too
+   or only at the short one.
+2. *HFSS at Delta S = 0.005 on setup A*, the cheap test for the unexplained −2.4% offset.
+3. *The height above the roof deck*, which was never recorded and is needed before ground
    proximity can be ruled in or out.
-5. *Repeats.* One measurement per setup, so there is no repeatability figure for the roof
+4. *Repeats.* One measurement per setup, so there is no repeatability figure for the roof
    session; the five indoor repeats of setup A are all that exist, and they measure the room
    rather than the antenna.
-6. *The ferrite and cable-routing experiment*, planned and not done.
-7. *The delay of the kit's own pigtail*, measured directly, which closes §6.
+5. *The ferrite and cable-routing experiment*, planned and not done.
+6. *The delay of the kit's own pigtail*, measured directly, which closes §6.
 
 ## 9. Measuring the same antennas with an SDR
 
@@ -403,6 +419,7 @@ dipole-sim-vs-measurement/
                          antenna's own phase rotation
   data/                  <S>_hfss.csv          HFSS, as-built geometry
                          <S>_hfss_nominal.csv  HFSS, nominal geometry (the §5 convergence story)
+                         D_hfss_gap2.csv       HFSS, setup D with the gap cut to 2 mm (§8)
                          <S>_nec.csv           NEC2, as built
                          <S>_meas_*.s1p        measurements
                          results_summary.csv
