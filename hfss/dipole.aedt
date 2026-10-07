@@ -1193,6 +1193,8 @@ $begin 'AnsoftProject'
 			$begin 'PlotDefaults'
 				Default_SolutionId=36
 				Default_PlotFolder='Automatic'
+				Default_Phase='0deg'
+				Default_Freq='0.19GHz'
 			$end 'PlotDefaults'
 			$begin 'FieldsPlotManagerID'
 				NextUniqueID=0
@@ -1392,6 +1394,31 @@ $begin 'AnsoftProject'
 								Increment=0.0872664625997165
 								CreateIndexedSubsweepFlag=false
 							$end 'PostprocessSweep'
+							$begin 'Sweep'
+								Variable='g'
+								Column='2mm;21.83mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_pad'
+								Column='2mm;2.5mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_arm'
+								Column='2.5mm;2.85mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='L'
+								Column='489.1mm;500mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='pad'
+								Column='750mm'
+								Units='mm'
+							$end 'Sweep'
 						$end 'Sweeps'
 						IsPortOnly=false
 					$end 'SimDataExtractor'
@@ -1400,6 +1427,7 @@ $begin 'AnsoftProject'
 					ID=123
 					Name='Sweep1'
 					$begin 'SimDataExtractor'
+						SimValue('S(1,1)', 2, 90, false, SimValueID=434, 3, 0, 2, 0, false, false, -1, 1, 0, 1, 1, '', 0, 0)
 						$begin 'Sweeps'
 							$begin 'PostprocessSweep'
 								Variable='Freq'
@@ -1446,6 +1474,31 @@ $begin 'AnsoftProject'
 								Increment=0.0872664625997165
 								CreateIndexedSubsweepFlag=false
 							$end 'PostprocessSweep'
+							$begin 'Sweep'
+								Variable='g'
+								Column='2mm;21.83mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_pad'
+								Column='2mm;2.5mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_arm'
+								Column='2.5mm;2.85mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='L'
+								Column='489.1mm;500mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='pad'
+								Column='750mm'
+								Units='mm'
+							$end 'Sweep'
 						$end 'Sweeps'
 						IsPortOnly=false
 					$end 'SimDataExtractor'
@@ -2244,7 +2297,7 @@ $begin 'AnsoftProject'
 					ID=0
 					SetupType='HfssDriven'
 					SolveType='Single'
-					Frequency='190MHz'
+					Frequency='325MHz'
 					MaxDeltaS=0.01
 					UseMatrixConv=false
 					MaximumPasses=25
@@ -2334,7 +2387,7 @@ $begin 'AnsoftProject'
 			$begin 'PortFieldDisplay'
 				ScaleFactor=5
 				Solution='Setup1 : LastAdaptive'
-				Frequency='0.19GHz'
+				Frequency='0.325GHz'
 			$end 'PortFieldDisplay'
 		$end 'PortFieldDisplay'
 		$begin 'FieldsReporter'
@@ -2351,6 +2404,8 @@ $begin 'AnsoftProject'
 			$begin 'PlotDefaults'
 				Default_SolutionId=36
 				Default_PlotFolder='Automatic'
+				Default_Phase='0deg'
+				Default_Freq='0.325GHz'
 			$end 'PlotDefaults'
 			$begin 'FieldsPlotManagerID'
 				NextUniqueID=0
@@ -2511,7 +2566,7 @@ $begin 'AnsoftProject'
 						$begin 'Sweeps'
 							$begin 'Sweep'
 								Variable='Freq'
-								Column='0.19GHz'
+								Column='0.325GHz'
 								Units='GHz'
 							$end 'Sweep'
 							$begin 'PostprocessSweep'
@@ -2550,6 +2605,31 @@ $begin 'AnsoftProject'
 								Increment=0.0872664625997165
 								CreateIndexedSubsweepFlag=false
 							$end 'PostprocessSweep'
+							$begin 'Sweep'
+								Variable='g'
+								Column='21.83mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_pad'
+								Column='2.5mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_arm'
+								Column='2.99mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='L'
+								Column='289.1mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='pad'
+								Column='470mm'
+								Units='mm'
+							$end 'Sweep'
 						$end 'Sweeps'
 						IsPortOnly=false
 					$end 'SimDataExtractor'
@@ -2558,6 +2638,7 @@ $begin 'AnsoftProject'
 					ID=123
 					Name='Sweep1'
 					$begin 'SimDataExtractor'
+						SimValue('S(1,1)', 2, 90, false, SimValueID=421, 3, 0, 2, 0, false, false, -1, 1, 0, 1, 1, '', 0, 0)
 						$begin 'Sweeps'
 							$begin 'PostprocessSweep'
 								Variable='Freq'
@@ -2604,6 +2685,31 @@ $begin 'AnsoftProject'
 								Increment=0.0872664625997165
 								CreateIndexedSubsweepFlag=false
 							$end 'PostprocessSweep'
+							$begin 'Sweep'
+								Variable='g'
+								Column='2mm;21.83mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_pad'
+								Column='2.5mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_arm'
+								Column='2.5mm;2.99mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='L'
+								Column='289.1mm;300mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='pad'
+								Column='430mm;470mm'
+								Units='mm'
+							$end 'Sweep'
 						$end 'Sweeps'
 						IsPortOnly=false
 					$end 'SimDataExtractor'
@@ -2615,7 +2721,7 @@ $begin 'AnsoftProject'
 					N='Setup1'
 					V=0
 					Soln(N='AdaptivePass', V=158)
-					Soln(N='LastAdaptive', V=158)
+					Soln(N='LastAdaptive', V=420)
 					Soln(N='Sweep1', V=158)
 				$end 'Setup'
 				IQM=0
@@ -3402,7 +3508,7 @@ $begin 'AnsoftProject'
 					ID=0
 					SetupType='HfssDriven'
 					SolveType='Single'
-					Frequency='190MHz'
+					Frequency='805MHz'
 					MaxDeltaS=0.01
 					UseMatrixConv=false
 					MaximumPasses=25
@@ -3492,7 +3598,7 @@ $begin 'AnsoftProject'
 			$begin 'PortFieldDisplay'
 				ScaleFactor=5
 				Solution='Setup1 : LastAdaptive'
-				Frequency='0.19GHz'
+				Frequency='0.805GHz'
 			$end 'PortFieldDisplay'
 		$end 'PortFieldDisplay'
 		$begin 'FieldsReporter'
@@ -3510,7 +3616,7 @@ $begin 'AnsoftProject'
 				Default_SolutionId=36
 				Default_PlotFolder='Automatic'
 				Default_Phase='0deg'
-				Default_Freq='0.19GHz'
+				Default_Freq='0.805GHz'
 			$end 'PlotDefaults'
 			$begin 'FieldsPlotManagerID'
 				NextUniqueID=0
@@ -3671,7 +3777,7 @@ $begin 'AnsoftProject'
 						$begin 'Sweeps'
 							$begin 'Sweep'
 								Variable='Freq'
-								Column='0.19GHz'
+								Column='0.805GHz'
 								Units='GHz'
 							$end 'Sweep'
 							$begin 'PostprocessSweep'
@@ -3712,27 +3818,27 @@ $begin 'AnsoftProject'
 							$end 'PostprocessSweep'
 							$begin 'Sweep'
 								Variable='g'
-								Column='2mm;21.83mm'
+								Column='21.83mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='r_pad'
-								Column='2mm;2.13mm'
+								Column='2.13mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='r_arm'
-								Column='2.13mm;2.5mm'
+								Column='2.13mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='L'
-								Column='109.1mm;120mm'
+								Column='109.1mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='pad'
-								Column='175mm;190mm'
+								Column='190mm'
 								Units='mm'
 							$end 'Sweep'
 						$end 'Sweeps'
@@ -3826,7 +3932,7 @@ $begin 'AnsoftProject'
 					N='Setup1'
 					V=0
 					Soln(N='AdaptivePass', V=158)
-					Soln(N='LastAdaptive', V=158)
+					Soln(N='LastAdaptive', V=399)
 					Soln(N='Sweep1', V=158)
 				$end 'Setup'
 				IQM=0
@@ -4613,7 +4719,7 @@ $begin 'AnsoftProject'
 					ID=0
 					SetupType='HfssDriven'
 					SolveType='Single'
-					Frequency='190MHz'
+					Frequency='1370MHz'
 					MaxDeltaS=0.01
 					UseMatrixConv=false
 					MaximumPasses=25
@@ -4703,7 +4809,7 @@ $begin 'AnsoftProject'
 			$begin 'PortFieldDisplay'
 				ScaleFactor=5
 				Solution='Setup1 : LastAdaptive'
-				Frequency='0.19GHz'
+				Frequency='1.37GHz'
 			$end 'PortFieldDisplay'
 		$end 'PortFieldDisplay'
 		$begin 'FieldsReporter'
@@ -4721,7 +4827,7 @@ $begin 'AnsoftProject'
 				Default_SolutionId=36
 				Default_PlotFolder='Automatic'
 				Default_Phase='0deg'
-				Default_Freq='0.19GHz'
+				Default_Freq='1.37GHz'
 			$end 'PlotDefaults'
 			$begin 'FieldsPlotManagerID'
 				NextUniqueID=0
@@ -4761,7 +4867,7 @@ $begin 'AnsoftProject'
 					FirstCellPosX='0mm'
 					FirstCellPosY='0mm'
 					FirstCellPosZ='0mm'
-					Behavior='UseSlaveSettings'
+					Behavior='UseScanAngle'
 					ScanAnglePhi='45deg'
 					ScanAngleTheta='45deg'
 					UDirnPhaseShift='0deg'
@@ -4882,7 +4988,7 @@ $begin 'AnsoftProject'
 						$begin 'Sweeps'
 							$begin 'Sweep'
 								Variable='Freq'
-								Column='0.19GHz'
+								Column='1.37GHz'
 								Units='GHz'
 							$end 'Sweep'
 							$begin 'PostprocessSweep'
@@ -4923,27 +5029,27 @@ $begin 'AnsoftProject'
 							$end 'PostprocessSweep'
 							$begin 'Sweep'
 								Variable='g'
-								Column='2mm;21.83mm'
+								Column='21.83mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='r_pad'
-								Column='2.38mm;2.5mm'
+								Column='2.38mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='r_arm'
-								Column='2mm;2.38mm'
+								Column='2.38mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='L'
-								Column='69.1mm;70mm'
+								Column='69.1mm'
 								Units='mm'
 							$end 'Sweep'
 							$begin 'Sweep'
 								Variable='pad'
-								Column='105mm;125mm'
+								Column='125mm'
 								Units='mm'
 							$end 'Sweep'
 						$end 'Sweeps'
@@ -5037,7 +5143,7 @@ $begin 'AnsoftProject'
 					N='Setup1'
 					V=0
 					Soln(N='AdaptivePass', V=158)
-					Soln(N='LastAdaptive', V=158)
+					Soln(N='LastAdaptive', V=397)
 					Soln(N='Sweep1', V=158)
 				$end 'Setup'
 				IQM=0
@@ -5824,7 +5930,7 @@ $begin 'AnsoftProject'
 					ID=0
 					SetupType='HfssDriven'
 					SolveType='Single'
-					Frequency='190MHz'
+					Frequency='1370MHz'
 					MaxDeltaS=0.01
 					UseMatrixConv=false
 					MaximumPasses=25
@@ -5913,6 +6019,7 @@ $begin 'AnsoftProject'
 		$begin 'PortFieldDisplay'
 			$begin 'PortFieldDisplay'
 				ScaleFactor=5
+				Frequency='0.19GHz'
 			$end 'PortFieldDisplay'
 		$end 'PortFieldDisplay'
 		$begin 'FieldsReporter'
@@ -5929,6 +6036,8 @@ $begin 'AnsoftProject'
 			$begin 'PlotDefaults'
 				Default_SolutionId=36
 				Default_PlotFolder='Automatic'
+				Default_Phase='0deg'
+				Default_Freq='1.37GHz'
 			$end 'PlotDefaults'
 			$begin 'FieldsPlotManagerID'
 				NextUniqueID=0
@@ -5968,7 +6077,7 @@ $begin 'AnsoftProject'
 					FirstCellPosX='0mm'
 					FirstCellPosY='0mm'
 					FirstCellPosZ='0mm'
-					Behavior='UseScanAngle'
+					Behavior='UseSlaveSettings'
 					ScanAnglePhi='45deg'
 					ScanAngleTheta='45deg'
 					UDirnPhaseShift='0deg'
@@ -6089,7 +6198,7 @@ $begin 'AnsoftProject'
 						$begin 'Sweeps'
 							$begin 'Sweep'
 								Variable='Freq'
-								Column='0.19GHz'
+								Column='1.37GHz'
 								Units='GHz'
 							$end 'Sweep'
 							$begin 'PostprocessSweep'
@@ -6128,6 +6237,31 @@ $begin 'AnsoftProject'
 								Increment=0.0872664625997165
 								CreateIndexedSubsweepFlag=false
 							$end 'PostprocessSweep'
+							$begin 'Sweep'
+								Variable='g'
+								Column='2mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_pad'
+								Column='2.38mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='r_arm'
+								Column='2.38mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='L'
+								Column='79mm'
+								Units='mm'
+							$end 'Sweep'
+							$begin 'Sweep'
+								Variable='pad'
+								Column='125mm'
+								Units='mm'
+							$end 'Sweep'
 						$end 'Sweeps'
 						IsPortOnly=false
 					$end 'SimDataExtractor'
@@ -6219,7 +6353,7 @@ $begin 'AnsoftProject'
 					N='Setup1'
 					V=0
 					Soln(N='AdaptivePass', V=158)
-					Soln(N='LastAdaptive', V=158)
+					Soln(N='LastAdaptive', V=233)
 					Soln(N='Sweep1', V=158)
 				$end 'Setup'
 				IQM=0
@@ -6329,7 +6463,7 @@ $begin 'AnsoftProject'
 				DesignInstanceID=12
 				$begin 'WindowPosition'
 					$begin 'EditorWindow'
-						Circuit(Editor3d(View('View Orientation Gadget'=1, WindowPos(5, -1, -1, -9, -38, 160, 160, 1564, 552), OrientationMatrix(0.0023475531488657, -0.00135536037851125, 0.00191676907707006, 0, 0.0023475531488657, 0.00135536037851125, -0.00191676907707006, 0, 0, 0.0027107207570225, 0.00191676907707006, 0, 0, -2.38418579101562e-07, -5.67982578277588, 1, 0, -3.34310841560364, 3.34310841560364, -1, 1, 1.14952039718628, 10.2101306915283), Drawings[4: 'arm_top', 'arm_bottom', 'port', 'Region'], 'View Data'('Render Mode'=1, 'Show Ruler'=1, 'Coordinate Systems View Mode'=1, 'CS Triad View Mode'=0, 'Render Facets'=1, GridVisible=1, GridAutoAdjust=1, GridAutoExtents=1, GridType='Rect', GridStyle='Line', NumPixels=30, dXForGrid=50, dYForGrid=50, dZForGrid=50, dRForGrid=50, dThetaForGrid=10), ClipPlanes(ClipPlaneOptions(DisableWhenDrawingNewPlane=true, ForceOpqaueForUnclipped=false, ShowClipped=false, Transparency=0, HandleColor=16776960)))))
+						Circuit(Editor3d(View('View Orientation Gadget'=1, WindowPos(1, -1, -1, -9, -38, 160, 160, 1564, 552), OrientationMatrix(0.0023475531488657, -0.00135536037851125, 0.00191676907707006, 0, 0.0023475531488657, 0.00135536037851125, -0.00191676907707006, 0, 0, 0.0027107207570225, 0.00191676907707006, 0, 0, -2.38418579101562e-07, -5.67982578277588, 1, 0, -3.34310841560364, 3.34310841560364, -1, 1, 1.14952039718628, 10.2101306915283), Drawings[4: 'arm_top', 'arm_bottom', 'port', 'Region'], 'View Data'('Render Mode'=1, 'Show Ruler'=1, 'Coordinate Systems View Mode'=1, 'CS Triad View Mode'=0, 'Render Facets'=1, GridVisible=1, GridAutoAdjust=1, GridAutoExtents=1, GridType='Rect', GridStyle='Line', NumPixels=30, dXForGrid=50, dYForGrid=50, dZForGrid=50, dRForGrid=50, dThetaForGrid=10), ClipPlanes(ClipPlaneOptions(DisableWhenDrawingNewPlane=true, ForceOpqaueForUnclipped=false, ShowClipped=false, Transparency=0, HandleColor=16776960)))))
 					$end 'EditorWindow'
 				$end 'WindowPosition'
 				$begin 'ReportSetup'
@@ -8065,7 +8199,7 @@ $begin 'AnsoftProject'
 									$end 'Graph2D'
 								$end 'Graph2DsV2'
 								$begin 'PlotDisplayDataManager'
-									NextUniqueID=71
+									NextUniqueID=77
 									MoveBackwards=false
 									$begin 'PlotHeaderDataSource'
 										CompanyName=''
@@ -9334,10 +9468,10 @@ $begin 'AnsoftProject'
 														DataSourceID=2
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'LayoutRect'
 														$end 'BasicLayoutAttribute'
 													$end 'SubMapItem'
@@ -9345,10 +9479,10 @@ $begin 'AnsoftProject'
 														DataSourceID=28
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'LayoutRect'
 														$end 'BasicLayoutAttribute'
 													$end 'SubMapItem'
@@ -9359,7 +9493,7 @@ $begin 'AnsoftProject'
 																Top=75
 																Left=75
 																Bottom=9925
-																Right=1313
+																Right=1325
 															$end 'LayoutRect'
 														$end 'BasicLayoutAttribute'
 													$end 'SubMapItem'
@@ -9370,15 +9504,15 @@ $begin 'AnsoftProject'
 														$begin 'CartesianAxisLayoutAttribute'
 															$begin 'AxisRect'
 																Top=75
-																Left=8851
+																Left=8841
 																Bottom=9925
 																Right=9925
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'GridRect'
 															AxisCollapsed=false
 															AxisExpandCollapseByUser=false
@@ -9389,15 +9523,15 @@ $begin 'AnsoftProject'
 														$begin 'CartesianAxisLayoutAttribute'
 															$begin 'AxisRect'
 																Top=75
-																Left=1571
-																Bottom=632
-																Right=8851
+																Left=1585
+																Bottom=638
+																Right=8841
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'GridRect'
 															AxisCollapsed=false
 															AxisExpandCollapseByUser=false
@@ -9405,17 +9539,6 @@ $begin 'AnsoftProject'
 													$end 'SubMapItem'
 												$end 'MainMapItem'
 												$begin 'MainMapItem'
-													$begin 'SubMapItem'
-														DataSourceID=2
-														$begin 'CartesianCurveGroupLayoutAttribute'
-															X_spc=20000000
-															X_fwd=3
-															X_fpr=0
-															Y1_spc=2.5
-															Y1_fwd=3
-															Y1_fpr=1
-														$end 'CartesianCurveGroupLayoutAttribute'
-													$end 'SubMapItem'
 												$end 'MainMapItem'
 												$begin 'MainMapItem'
 													$begin 'SubMapItem'
@@ -9425,9 +9548,9 @@ $begin 'AnsoftProject'
 																$begin 'OverlayLayoutAttribute'
 																	$begin 'BoundingRect'
 																		Top=4850
-																		Left=1413
+																		Left=1425
 																		Bottom=9850
-																		Right=8913
+																		Right=8925
 																	$end 'BoundingRect'
 																	ModifySize=false
 																	ModifyPosition=false
@@ -9666,7 +9789,7 @@ $begin 'AnsoftProject'
 									$end 'Graph2D'
 								$end 'Graph2DsV2'
 								$begin 'PlotDisplayDataManager'
-									NextUniqueID=56
+									NextUniqueID=62
 									MoveBackwards=false
 									$begin 'PlotHeaderDataSource'
 										CompanyName=''
@@ -10935,10 +11058,10 @@ $begin 'AnsoftProject'
 														DataSourceID=2
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'LayoutRect'
 														$end 'BasicLayoutAttribute'
 													$end 'SubMapItem'
@@ -10946,10 +11069,10 @@ $begin 'AnsoftProject'
 														DataSourceID=28
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'LayoutRect'
 														$end 'BasicLayoutAttribute'
 													$end 'SubMapItem'
@@ -10960,7 +11083,7 @@ $begin 'AnsoftProject'
 																Top=75
 																Left=75
 																Bottom=9925
-																Right=1313
+																Right=1325
 															$end 'LayoutRect'
 														$end 'BasicLayoutAttribute'
 													$end 'SubMapItem'
@@ -10971,15 +11094,15 @@ $begin 'AnsoftProject'
 														$begin 'CartesianAxisLayoutAttribute'
 															$begin 'AxisRect'
 																Top=75
-																Left=8851
+																Left=8841
 																Bottom=9925
 																Right=9925
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'GridRect'
 															AxisCollapsed=false
 															AxisExpandCollapseByUser=false
@@ -10990,15 +11113,15 @@ $begin 'AnsoftProject'
 														$begin 'CartesianAxisLayoutAttribute'
 															$begin 'AxisRect'
 																Top=75
-																Left=1571
-																Bottom=632
-																Right=8851
+																Left=1585
+																Bottom=638
+																Right=8841
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=632
-																Left=1571
+																Top=638
+																Left=1585
 																Bottom=9833
-																Right=8851
+																Right=8841
 															$end 'GridRect'
 															AxisCollapsed=false
 															AxisExpandCollapseByUser=false
@@ -11006,17 +11129,6 @@ $begin 'AnsoftProject'
 													$end 'SubMapItem'
 												$end 'MainMapItem'
 												$begin 'MainMapItem'
-													$begin 'SubMapItem'
-														DataSourceID=2
-														$begin 'CartesianCurveGroupLayoutAttribute'
-															X_spc=10000000
-															X_fwd=3
-															X_fpr=0
-															Y1_spc=2.5
-															Y1_fwd=3
-															Y1_fpr=1
-														$end 'CartesianCurveGroupLayoutAttribute'
-													$end 'SubMapItem'
 												$end 'MainMapItem'
 												$begin 'MainMapItem'
 													$begin 'SubMapItem'
@@ -11026,9 +11138,9 @@ $begin 'AnsoftProject'
 																$begin 'OverlayLayoutAttribute'
 																	$begin 'BoundingRect'
 																		Top=4850
-																		Left=1413
+																		Left=1425
 																		Bottom=9850
-																		Right=8913
+																		Right=8925
 																	$end 'BoundingRect'
 																	ModifySize=false
 																	ModifyPosition=false
@@ -11267,7 +11379,7 @@ $begin 'AnsoftProject'
 									$end 'Graph2D'
 								$end 'Graph2DsV2'
 								$begin 'PlotDisplayDataManager'
-									NextUniqueID=80
+									NextUniqueID=86
 									MoveBackwards=false
 									$begin 'PlotHeaderDataSource'
 										CompanyName=''
@@ -12536,7 +12648,7 @@ $begin 'AnsoftProject'
 														DataSourceID=2
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=637
+																Top=638
 																Left=1585
 																Bottom=9833
 																Right=8841
@@ -12547,7 +12659,7 @@ $begin 'AnsoftProject'
 														DataSourceID=28
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=637
+																Top=638
 																Left=1585
 																Bottom=9833
 																Right=8841
@@ -12577,7 +12689,7 @@ $begin 'AnsoftProject'
 																Right=9925
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=637
+																Top=638
 																Left=1585
 																Bottom=9833
 																Right=8841
@@ -12592,11 +12704,11 @@ $begin 'AnsoftProject'
 															$begin 'AxisRect'
 																Top=75
 																Left=1585
-																Bottom=637
+																Bottom=638
 																Right=8841
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=637
+																Top=638
 																Left=1585
 																Bottom=9833
 																Right=8841
@@ -12722,7 +12834,7 @@ $begin 'AnsoftProject'
 				DesignInstanceID=15
 				$begin 'WindowPosition'
 					$begin 'EditorWindow'
-						Circuit(Editor3d(View('View Orientation Gadget'=1, WindowPos(1, -1, -1, -1, -1, 0, 0, 1467, 475), OrientationMatrix(0.00234486954286695, -0.00135381100699306, 0.00191457790788263, 0, 0.00234486954286695, 0.00135381100699306, -0.00191457790788263, 0, 0, 0.00270762201398611, 0.00191457790788263, 0, 0, 0, -5.68027544021606, 1, 0, -2.83726406097412, 2.83726406097412, -1, 1, 1.15533590316772, 10.2052154541016), Drawings[4: 'arm_top', 'arm_bottom', 'port', 'Region'], 'View Data'('Render Mode'=1, 'Show Ruler'=1, 'Coordinate Systems View Mode'=1, 'CS Triad View Mode'=0, 'Render Facets'=1, GridVisible=1, GridAutoAdjust=1, GridAutoExtents=1, GridType='Rect', GridStyle='Line', NumPixels=30, dXForGrid=50, dYForGrid=50, dZForGrid=50, dRForGrid=50, dThetaForGrid=10), ClipPlanes(ClipPlaneOptions(DisableWhenDrawingNewPlane=true, ForceOpqaueForUnclipped=false, ShowClipped=false, Transparency=0, HandleColor=16776960)))))
+						Circuit(Editor3d(View('View Orientation Gadget'=1, WindowPos(5, -1, -1, -1, -1, 0, 0, 1467, 475), OrientationMatrix(0.00234486954286695, -0.00135381100699306, 0.00191457790788263, 0, 0.00234486954286695, 0.00135381100699306, -0.00191457790788263, 0, 0, 0.00270762201398611, 0.00191457790788263, 0, 0, 0, -5.68027544021606, 1, 0, -2.83726406097412, 2.83726406097412, -1, 1, 1.15533590316772, 10.2052154541016), Drawings[4: 'arm_top', 'arm_bottom', 'port', 'Region'], 'View Data'('Render Mode'=1, 'Show Ruler'=1, 'Coordinate Systems View Mode'=1, 'CS Triad View Mode'=0, 'Render Facets'=1, GridVisible=1, GridAutoAdjust=1, GridAutoExtents=1, GridType='Rect', GridStyle='Line', NumPixels=30, dXForGrid=50, dYForGrid=50, dZForGrid=50, dRForGrid=50, dThetaForGrid=10), ClipPlanes(ClipPlaneOptions(DisableWhenDrawingNewPlane=true, ForceOpqaueForUnclipped=false, ShowClipped=false, Transparency=0, HandleColor=16776960)))))
 					$end 'EditorWindow'
 				$end 'WindowPosition'
 				$begin 'ReportSetup'
@@ -12857,7 +12969,7 @@ $begin 'AnsoftProject'
 									$end 'Graph2D'
 								$end 'Graph2DsV2'
 								$begin 'PlotDisplayDataManager'
-									NextUniqueID=86
+									NextUniqueID=92
 									MoveBackwards=false
 									$begin 'PlotHeaderDataSource'
 										CompanyName=''
@@ -14126,7 +14238,7 @@ $begin 'AnsoftProject'
 														DataSourceID=2
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=637
+																Top=545
 																Left=1585
 																Bottom=9841
 																Right=8841
@@ -14137,7 +14249,7 @@ $begin 'AnsoftProject'
 														DataSourceID=28
 														$begin 'BasicLayoutAttribute'
 															$begin 'LayoutRect'
-																Top=637
+																Top=545
 																Left=1585
 																Bottom=9841
 																Right=8841
@@ -14167,7 +14279,7 @@ $begin 'AnsoftProject'
 																Right=9925
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=637
+																Top=545
 																Left=1585
 																Bottom=9841
 																Right=8841
@@ -14182,11 +14294,11 @@ $begin 'AnsoftProject'
 															$begin 'AxisRect'
 																Top=75
 																Left=1585
-																Bottom=637
+																Bottom=545
 																Right=8841
 															$end 'AxisRect'
 															$begin 'GridRect'
-																Top=637
+																Top=545
 																Left=1585
 																Bottom=9841
 																Right=8841
@@ -14197,17 +14309,6 @@ $begin 'AnsoftProject'
 													$end 'SubMapItem'
 												$end 'MainMapItem'
 												$begin 'MainMapItem'
-													$begin 'SubMapItem'
-														DataSourceID=2
-														$begin 'CartesianCurveGroupLayoutAttribute'
-															X_spc=100000000
-															X_fwd=2
-															X_fpr=1
-															Y1_spc=5
-															Y1_fwd=2
-															Y1_fpr=0
-														$end 'CartesianCurveGroupLayoutAttribute'
-													$end 'SubMapItem'
 												$end 'MainMapItem'
 												$begin 'MainMapItem'
 													$begin 'SubMapItem'
@@ -15341,7 +15442,7 @@ CiiigAooooA/9k='
 		DesignName='HFSSDesign6'
 		Notes=''
 		Factory='HFSS'
-		IsSolved=false
+		IsSolved=true
 		'Nominal Setups'[1: 'Setup1']
 		'Nominal Setup Types'[1: '']
 		'Optimetrics Setups'[0:]
